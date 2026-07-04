@@ -1,0 +1,6 @@
+{
+  "name": "Livoom Gestione Clienti",
+  "description": "Una web app CRM semplice per gestire contatti, chiamate, appuntamenti in agenda e link a documenti Google Drive.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
