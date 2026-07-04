@@ -51,7 +51,7 @@ export default function App() {
               email: session.user.email || '',
               isDemo: false
             });
-            showNotification('Sessione Supabase attiva recuperata con successo.', 'success');
+            
           }
         } catch (err) {
           console.error('Session check error:', err);
