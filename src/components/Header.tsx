@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Database, Sparkles, User, LogOut, BellRing, HelpCircle } from 'lucide-react';
+import { Menu, Sparkles, User, LogOut, BellRing, HelpCircle } from 'lucide-react';
 
 interface HeaderProps {
   currentViewLabel: string;
@@ -36,19 +36,14 @@ export default function Header({
       <div className="flex items-center gap-3" id="header-right">
         
         {/* Connection status pills */}
-        <div className="hidden sm:block" id="connection-status-container">
-          {user.isDemo ? (
+        {user.isDemo && (
+          <div className="hidden sm:block" id="connection-status-container">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-bold">
               <Sparkles className="w-3.5 h-3.5 animate-pulse text-amber-500" />
               Demo Sandbox (Dati Locali)
             </div>
-          ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold">
-              <Database className="w-3.5 h-3.5 animate-pulse text-emerald-500" />
-              Supabase Cloud Attivo
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Small avatar block */}
         <div className="h-8 w-px bg-zinc-200 hidden sm:block" />
