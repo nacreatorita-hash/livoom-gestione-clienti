@@ -103,7 +103,7 @@ export default function AuthView({ onAuthSuccess }: AuthViewProps) {
           {hasSupabase ? (
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Supabase Connesso
+              Online
             </span>
           ) : (
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700">
