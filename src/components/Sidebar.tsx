@@ -9,8 +9,7 @@ import {
   Menu, 
   X, 
   Sparkles, 
-  ChevronRight,
-  Database
+  ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -59,17 +58,13 @@ export default function Sidebar({
             <h2 className="font-sans font-bold tracking-tight text-lg text-zinc-800">Livoom Gestione Clienti</h2>
             <p className="text-[10px] text-zinc-400 font-semibold">Created by Na Creator Italia</p>
           </div>
-          <div className="flex items-center gap-1 mt-0.5">
-            {user.isDemo ? (
+          {user.isDemo && (
+            <div className="flex items-center gap-1 mt-0.5">
               <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100 font-semibold">
                 <Sparkles className="w-2.5 h-2.5" /> Demo Sandbox
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold">
-                <Database className="w-2.5 h-2.5" /> Supabase Cloud
-              </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
