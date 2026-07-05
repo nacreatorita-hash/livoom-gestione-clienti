@@ -15,16 +15,18 @@ import {
   Clock,
   Sparkles,
   SearchCheck,
-  AlertCircle
+  AlertCircle,
+  CalendarClock
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { getDocumentExpiry, getExpiryBadgeClass, parseDateOnly } from '../lib/documentExpiry';
 
 interface DashboardViewProps {
   contacts: Contact[];
   calls: Call[];
   appointments: Appointment[];
   documents: DocumentDrive[];
-  onNavigateToView: (view: 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti') => void;
+  onNavigateToView: (view: 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti' | 'scadenze-documenti') => void;
   onSelectContact: (contactId: string) => void;
   onAddCallForContact: (contact: Contact) => void;
 }
@@ -69,6 +71,12 @@ export default function DashboardView({
   const totalCalls = calls.length;
   const totalAppts = appointments.length;
   const totalDocs = documents.length;
+  const expiringDocuments = documents
+    .filter(document => Boolean(document.scadenza))
+    .map(document => ({ document, expiry: getDocumentExpiry(document)! }))
+    .sort((a, b) => parseDateOnly(a.document.scadenza!).getTime() - parseDateOnly(b.document.scadenza!).getTime());
+  const expiredDocumentsCount = expiringDocuments.filter(item => item.expiry.daysRemaining < 0).length;
+  const withinThirtyDaysCount = expiringDocuments.filter(item => item.expiry.daysRemaining >= 0 && item.expiry.daysRemaining <= 30).length;
 
   // 2. Identify contacts to recall today
   // A contact needs a recall today if their LATEST call has prossimo_richiamo === todayStr
@@ -189,6 +197,34 @@ export default function DashboardView({
           );
         })}
       </div>
+
+      <section className="dashboard-expiry-widget" id="dashboard-expiry-widget">
+        <div className="dashboard-expiry-header">
+          <div className="flex items-center gap-3">
+            <div className="expiry-title-icon"><CalendarClock className="w-5 h-5" /></div>
+            <div>
+              <h3>Documenti in scadenza</h3>
+              <p>Scadenze reali collegate ai clienti</p>
+            </div>
+          </div>
+          <button onClick={() => onNavigateToView('scadenze-documenti')}>Vedi tutte le scadenze <ChevronRight className="w-4 h-4" /></button>
+        </div>
+        <div className="dashboard-expiry-summary">
+          <div><strong>{expiredDocumentsCount}</strong><span>Scaduti</span></div>
+          <div><strong>{withinThirtyDaysCount}</strong><span>Entro 30 giorni</span></div>
+        </div>
+        <div className="dashboard-expiry-list">
+          {expiringDocuments.length === 0 ? (
+            <p className="dashboard-expiry-empty">Nessun documento con scadenza registrata.</p>
+          ) : expiringDocuments.slice(0, 5).map(({ document, expiry }) => (
+            <button key={document.id} onClick={() => onNavigateToView('scadenze-documenti')}>
+              <span className="dashboard-expiry-name">{document.nome_documento}</span>
+              <span>{parseDateOnly(document.scadenza!).toLocaleDateString('it-IT')}</span>
+              <span className={getExpiryBadgeClass(expiry.status)}>{expiry.status}</span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* Main Focus: Recalls & Calendar for Today */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" id="dashboard-focus-grid">

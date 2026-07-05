@@ -391,6 +391,26 @@ export const storage = {
     }
   },
 
+  updateDocument: async (id: string, updates: Partial<Omit<DocumentDrive, 'id' | 'created_at' | 'user_id'>>): Promise<DocumentDrive> => {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('documents')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } else {
+      const list = JSON.parse(localStorage.getItem('nacrm_documents') || '[]');
+      const index = list.findIndex((d: DocumentDrive) => d.id === id);
+      if (index === -1) throw new Error('Documento non trovato');
+      list[index] = { ...list[index], ...updates };
+      localStorage.setItem('nacrm_documents', JSON.stringify(list));
+      return list[index];
+    }
+  },
+
   deleteDocument: async (id: string): Promise<void> => {
     if (supabase) {
       const { error } = await supabase.from('documents').delete().eq('id', id);

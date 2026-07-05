@@ -20,7 +20,8 @@ import {
   ChevronDown,
   Eye,
   ArrowLeft,
-  HardDrive
+  HardDrive,
+  Pencil
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -28,25 +29,32 @@ interface DocumentiViewProps {
   contacts: Contact[];
   documents: DocumentDrive[];
   onCreateDocument: (doc: Omit<DocumentDrive, 'id' | 'created_at' | 'user_id'>) => Promise<DocumentDrive>;
+  onUpdateDocument: (id: string, updates: Partial<Omit<DocumentDrive, 'id' | 'created_at' | 'user_id'>>) => Promise<DocumentDrive>;
   onDeleteDocument: (id: string) => Promise<void>;
   onSelectContact: (contactId: string) => void;
-  onNavigateToView: (view: 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti') => void;
+  onNavigateToView: (view: 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti' | 'scadenze-documenti') => void;
   preselectedContact: Contact | null;
+  preselectedDocument: DocumentDrive | null;
   clearPreselectedContact: () => void;
+  clearPreselectedDocument: () => void;
 }
 
 export default function DocumentiView({
   contacts,
   documents,
   onCreateDocument,
+  onUpdateDocument,
   onDeleteDocument,
   onSelectContact,
   onNavigateToView,
   preselectedContact,
+  preselectedDocument,
   clearPreselectedContact,
+  clearPreselectedDocument,
 }: DocumentiViewProps) {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingDocument, setEditingDocument] = useState<DocumentDrive | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'folders' | 'list'>('folders');
@@ -65,6 +73,7 @@ export default function DocumentiView({
   const [linkDrive, setLinkDrive] = useState('');
   const [tipoDocumento, setTipoDocumento] = useState<DocumentType>('Contratto');
   const [scadenza, setScadenza] = useState('');
+  const [notaScadenza, setNotaScadenza] = useState('');
   const [linkError, setLinkError] = useState('');
 
   // Sync pre-selected contact
@@ -75,9 +84,24 @@ export default function DocumentiView({
       setLinkDrive('');
       setTipoDocumento('Contratto');
       setScadenza('');
+      setNotaScadenza('');
+      setEditingDocument(null);
       setIsFormOpen(true);
     }
   }, [preselectedContact]);
+
+  useEffect(() => {
+    if (!preselectedDocument) return;
+    setEditingDocument(preselectedDocument);
+    setContattoId(preselectedDocument.contatto_id);
+    setNomeDocumento(preselectedDocument.nome_documento);
+    setLinkDrive(preselectedDocument.link_drive);
+    setTipoDocumento(preselectedDocument.tipo_documento);
+    setScadenza(preselectedDocument.scadenza || '');
+    setNotaScadenza(preselectedDocument.nota_scadenza || '');
+    setLinkError('');
+    setIsFormOpen(true);
+  }, [preselectedDocument]);
 
   const handleOpenCreate = () => {
     setContattoId(contacts[0]?.id || '');
@@ -85,6 +109,8 @@ export default function DocumentiView({
     setLinkDrive('');
     setTipoDocumento('Contratto');
     setScadenza('');
+    setNotaScadenza('');
+    setEditingDocument(null);
     setLinkError('');
     setIsFormOpen(true);
   };
@@ -92,6 +118,19 @@ export default function DocumentiView({
   const handleCloseCreate = () => {
     setIsFormOpen(false);
     clearPreselectedContact();
+    clearPreselectedDocument();
+  };
+
+  const handleOpenEdit = (document: DocumentDrive) => {
+    setEditingDocument(document);
+    setContattoId(document.contatto_id);
+    setNomeDocumento(document.nome_documento);
+    setLinkDrive(document.link_drive);
+    setTipoDocumento(document.tipo_documento);
+    setScadenza(document.scadenza || '');
+    setNotaScadenza(document.nota_scadenza || '');
+    setLinkError('');
+    setIsFormOpen(true);
   };
 
   const handleLinkChange = (val: string) => {
@@ -111,13 +150,16 @@ export default function DocumentiView({
     }
 
     try {
-      await onCreateDocument({
+      const payload = {
         contatto_id: contattoId,
         nome_documento: nomeDocumento.trim(),
         link_drive: linkDrive.trim(),
         tipo_documento: tipoDocumento,
-        scadenza: scadenza ? scadenza : null
-      });
+        scadenza: scadenza || null,
+        nota_scadenza: notaScadenza.trim() || null
+      };
+      if (editingDocument) await onUpdateDocument(editingDocument.id, payload);
+      else await onCreateDocument(payload);
       setIsFormOpen(false);
       clearPreselectedContact();
     } catch (err) {
@@ -588,13 +630,14 @@ export default function DocumentiView({
                         Caricato: {new Date(doc.created_at).toLocaleDateString('it-IT')}
                       </span>
 
-                      <button
-                        onClick={() => handleDelete(doc.id)}
-                        className="p-1 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
-                        title="Scollega Documento"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => handleOpenEdit(doc)} className="p-1 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all cursor-pointer" title="Modifica Documento">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(doc.id)} className="p-1 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer" title="Scollega Documento">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -618,7 +661,7 @@ export default function DocumentiView({
               <div className="p-5 border-b border-zinc-100 flex items-center justify-between" id="doc-form-header">
                 <h3 className="text-sm font-bold text-zinc-800 flex items-center gap-2">
                   <FolderLock className="w-4 h-4 text-indigo-600" />
-                  Collega Link Google Drive
+                  {editingDocument ? 'Modifica documento' : 'Collega Link Google Drive'}
                 </h3>
                 <button 
                   onClick={handleCloseCreate} 
@@ -719,6 +762,17 @@ export default function DocumentiView({
                     </div>
                   </div>
 
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Nota sulla scadenza (Opzionale)</label>
+                    <textarea
+                      rows={2}
+                      value={notaScadenza}
+                      onChange={(e) => setNotaScadenza(e.target.value)}
+                      placeholder="Es. Richiedere il rinnovo al cliente 15 giorni prima"
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-2.5 text-xs text-zinc-800 placeholder-zinc-300 focus:outline-none focus:border-indigo-500/50 resize-none"
+                    />
+                  </div>
+
                   <div className="border-t border-zinc-100 pt-4 flex justify-end gap-2" id="doc-form-submit-group">
                     <button
                       type="button"
@@ -731,7 +785,7 @@ export default function DocumentiView({
                       type="submit"
                       className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-indigo-100 cursor-pointer"
                     >
-                      Salva Collegamento
+                      {editingDocument ? 'Salva modifiche' : 'Salva collegamento'}
                     </button>
                   </div>
                 </form>

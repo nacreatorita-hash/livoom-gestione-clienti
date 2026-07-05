@@ -11,6 +11,7 @@ import ContattiView from './components/ContattiView';
 import ChiamateView from './components/ChiamateView';
 import AgendaView from './components/AgendaView';
 import DocumentiView from './components/DocumentiView';
+import ScadenzeDocumentiView from './components/ScadenzeDocumentiView';
 
 import { AlertCircle, Loader2, Sparkles, Database, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -33,6 +34,7 @@ export default function App() {
 
   // Context passing between views
   const [preselectedContact, setPreselectedContact] = useState<Contact | null>(null);
+  const [preselectedDocument, setPreselectedDocument] = useState<DocumentDrive | null>(null);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
 
   // Global Toast Notifications
@@ -277,6 +279,18 @@ export default function App() {
     }
   };
 
+  const handleUpdateDocument = async (id: string, updates: Partial<Omit<DocumentDrive, 'id' | 'created_at' | 'user_id'>>) => {
+    try {
+      const updated = await storage.updateDocument(id, updates);
+      setDocuments(prev => prev.map(document => document.id === id ? updated : document));
+      showNotification(`Documento "${updated.nome_documento}" aggiornato.`, 'success');
+      return updated;
+    } catch (err: any) {
+      showNotification('Impossibile aggiornare il documento: ' + err.message, 'error');
+      throw err;
+    }
+  };
+
   // --- NAVIGATION SHORTCUT HELPERS ---
   const handleAddCallForContact = (contact: Contact) => {
     setPreselectedContact(contact);
@@ -321,11 +335,12 @@ export default function App() {
   // Map view IDs to clean labels for Header
   const getViewLabel = () => {
     switch (currentView) {
-      case 'dashboard': return 'CRUSCOTTO DIREZIONALE';
-      case 'contatti': return 'ANAGRAFICA CONTATTI';
-      case 'chiamate': return 'REGISTRO TELEFONATE';
-      case 'agenda': return 'AGENDA APPUNTAMENTI';
-      case 'documenti': return 'COLLEGAMENTI GOOGLE DRIVE';
+      case 'dashboard': return 'Dashboard';
+      case 'contatti': return 'Clienti';
+      case 'chiamate': return 'Chiamate';
+      case 'agenda': return 'Agenda';
+      case 'documenti': return 'Documenti';
+      case 'scadenze-documenti': return 'Scadenze documenti';
       default: return 'Livoom Gestione Clienti';
     }
   };
@@ -479,13 +494,28 @@ export default function App() {
                 contacts={contacts}
                 documents={documents}
                 onCreateDocument={handleCreateDocument}
+                onUpdateDocument={handleUpdateDocument}
                 onDeleteDocument={handleDeleteDocument}
                 onSelectContact={setSelectedContactId}
                 onNavigateToView={(view) => {
                   setCurrentView(view);
                 }}
                 preselectedContact={preselectedContact}
+                preselectedDocument={preselectedDocument}
                 clearPreselectedContact={() => setPreselectedContact(null)}
+                clearPreselectedDocument={() => setPreselectedDocument(null)}
+              />
+            )}
+
+            {currentView === 'scadenze-documenti' && (
+              <ScadenzeDocumentiView
+                contacts={contacts}
+                documents={documents}
+                onSelectContact={handleSelectAndGoToContact}
+                onEditDocument={(document) => {
+                  setPreselectedDocument(document);
+                  setCurrentView('documenti');
+                }}
               />
             )}
           </div>

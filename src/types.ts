@@ -3,7 +3,7 @@ export type ContactStatus = 'Nuovo' | 'In Contatto' | 'Trattativa' | 'Chiuso Vin
 export type CallOutcome = 'Risposto' | 'Non risposto' | 'Da richiamare' | 'Non interessato' | 'Appuntamento fissato';
 export type AppointmentType = 'Telefonico' | 'Video Call' | 'Presenziale' | 'Altro';
 export type DocumentType = 'Contratto' | 'Preventivo' | 'Fattura' | 'Identità' | 'Altro';
-export type ViewType = 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti';
+export type ViewType = 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti' | 'scadenze-documenti';
 
 export interface Contact {
   id: string;
@@ -55,6 +55,7 @@ export interface DocumentDrive {
   link_drive: string;
   tipo_documento: DocumentType;
   scadenza: string | null; // YYYY-MM-DD
+  nota_scadenza?: string | null;
 }
 
 // Stats interface for the Dashboard

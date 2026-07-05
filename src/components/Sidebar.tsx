@@ -5,6 +5,7 @@ import {
   PhoneCall, 
   Calendar, 
   FolderLock, 
+  CalendarClock,
   LogOut, 
   Menu, 
   X, 
@@ -13,7 +14,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-export type ViewType = 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti';
+export type ViewType = 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti' | 'scadenze-documenti';
 
 interface SidebarProps {
   currentView: ViewType;
@@ -34,11 +35,12 @@ export default function Sidebar({
 }: SidebarProps) {
   
   const menuItems = [
-    { id: 'dashboard' as ViewType, label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'contatti' as ViewType, label: 'Contatti', icon: Users },
-    { id: 'chiamate' as ViewType, label: 'Chiamate', icon: PhoneCall },
-    { id: 'agenda' as ViewType, label: 'Agenda', icon: Calendar },
-    { id: 'documenti' as ViewType, label: 'Documenti Drive', icon: FolderLock },
+    { id: 'dashboard' as ViewType, label: 'Dashboard', icon: LayoutDashboard, tone: 'indigo' },
+    { id: 'contatti' as ViewType, label: 'Clienti', icon: Users, tone: 'blue' },
+    { id: 'chiamate' as ViewType, label: 'Chiamate', icon: PhoneCall, tone: 'green' },
+    { id: 'agenda' as ViewType, label: 'Agenda', icon: Calendar, tone: 'coral' },
+    { id: 'documenti' as ViewType, label: 'Documenti', icon: FolderLock, tone: 'orange' },
+    { id: 'scadenze-documenti' as ViewType, label: 'Scadenze documenti', icon: CalendarClock, tone: 'red' },
   ];
 
   const handleNavClick = (viewId: ViewType) => {
@@ -50,9 +52,6 @@ export default function Sidebar({
     <div className="flex flex-col h-full bg-white border-r border-zinc-200 text-zinc-900" id="sidebar-inner">
       {/* Brand Logo */}
       <div className="p-6 border-b border-zinc-100 flex items-center gap-3" id="sidebar-brand">
-        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
-          <span className="font-sans text-sm font-bold">Na</span>
-        </div>
         <div>
           <div>
             <h2 className="font-sans font-bold tracking-tight text-lg text-zinc-800">Livoom Gestione Clienti</h2>
@@ -84,11 +83,11 @@ export default function Sidebar({
                   : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50/80'
               }`}
               id={`sidebar-link-${item.id}`}
+              data-tone={item.tone}
+              aria-current={isActive ? 'page' : undefined}
             >
               <div className="flex items-center gap-3">
-                <Icon className={`w-5 h-5 transition-colors ${
-                  isActive ? 'text-indigo-600' : 'text-zinc-400 group-hover:text-zinc-600'
-                }`} />
+                <span className="nav-icon-tile"><Icon className="w-4 h-4" /></span>
                 <span>{item.label}</span>
               </div>
               <ChevronRight className={`w-3.5 h-3.5 opacity-0 transition-all ${
@@ -107,7 +106,9 @@ export default function Sidebar({
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-zinc-800 truncate">{user.email || 'Utente'}</p>
-            <p className="text-[10px] text-zinc-500 truncate">Operatore CRM</p>
+            <p className="text-[10px] text-zinc-500 truncate">
+              {user.email === 'access@admin.it' ? 'Amministratore' : 'Utente CRM'}
+            </p>
           </div>
         </div>
 

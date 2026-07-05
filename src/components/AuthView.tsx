@@ -88,17 +88,7 @@ export default function AuthView({ onAuthSuccess }: AuthViewProps) {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e4e4e7_1px,transparent_1px),linear-gradient(to_bottom,#e4e4e7_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
       {/* Header */}
-      <div className="z-10 flex items-center justify-between max-w-7xl w-full mx-auto" id="auth-header">
-        <div className="flex items-center gap-2.5" id="auth-logo-group">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-sm" id="logo-icon">
-            <span className="font-sans text-base font-bold">Na</span>
-          </div>
-          <div>
-            <h1 className="font-sans font-bold tracking-tight text-lg text-zinc-800" id="logo-text">Livoom Gestione Clienti</h1>
-            <p className="text-xs text-zinc-400 font-semibold" id="logo-subtext">Created by Na Creator Italia</p>
-          </div>
-        </div>
-
+      <div className="z-10 flex items-center justify-end max-w-7xl w-full mx-auto" id="auth-header">
         <div className="flex items-center gap-2 text-xs font-bold" id="auth-status-badge">
           {hasSupabase ? (
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
@@ -128,7 +118,7 @@ export default function AuthView({ onAuthSuccess }: AuthViewProps) {
               <Shield className="w-6 h-6" />
             </div>
             <h2 className="text-xl font-bold font-sans tracking-tight text-zinc-800" id="auth-title">
-              {isLogin ? 'Accedi al tuo CRM' : 'Crea un nuovo account'}
+              {isLogin ? 'Accedi al tuo gestionale Livoom' : 'Crea un nuovo account'}
             </h2>
             <p className="text-xs text-zinc-400 font-semibold mt-1" id="auth-subtitle">
               {isLogin 

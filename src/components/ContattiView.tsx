@@ -19,9 +19,11 @@ import {
   Clock,
   Sparkles,
   ChevronLeft,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { getDocumentExpiry, getExpiryBadgeClass, parseDateOnly } from '../lib/documentExpiry';
 
 interface ContattiViewProps {
   contacts: Contact[];
@@ -67,6 +69,7 @@ export default function ContattiView({
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [expandedItem, setExpandedItem] = useState<{
     type: 'chiamata' | 'appuntamento' | 'documento';
@@ -98,6 +101,36 @@ export default function ContattiView({
 
   // Mobile navigation helper (in mobile we only show one panel at a time)
   const [showDetailMobile, setShowDetailMobile] = useState(false);
+
+  useEffect(() => {
+    if (!isFormOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isSaving) setIsFormOpen(false);
+      if (event.key === 'Tab') {
+        const modal = document.getElementById('contact-form-card');
+        const focusable = modal?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [isFormOpen, isSaving]);
 
   // Sync selected contact from outside or select the first one on load if none selected (desktop)
   useEffect(() => {
@@ -163,6 +196,7 @@ export default function ContattiView({
     };
 
     try {
+      setIsSaving(true);
       if (editingContact) {
         const updated = await onUpdateContact(editingContact.id, contactPayload);
         setSelectedContactId(updated.id);
@@ -173,6 +207,8 @@ export default function ContattiView({
       setIsFormOpen(false);
     } catch (err) {
       console.error('Error saving contact', err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -652,7 +688,18 @@ export default function ContattiView({
                                   <ExternalLink className="w-3 h-3" />
                                 </a>
                               </div>
-                              <p className="text-[8px] text-zinc-400 font-semibold">{d.tipo_documento}</p>
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <p className="text-[8px] text-zinc-400 font-semibold">{d.tipo_documento}</p>
+                                {d.scadenza && (() => {
+                                  const expiry = getDocumentExpiry(d)!;
+                                  return (
+                                    <>
+                                      <span className="text-[8px] text-zinc-500 font-semibold">{parseDateOnly(d.scadenza).toLocaleDateString('it-IT')}</span>
+                                      <span className={getExpiryBadgeClass(expiry.status)}>{expiry.status}</span>
+                                    </>
+                                  );
+                                })()}
+                              </div>
                             </div>
                           ))
                         )}
@@ -683,28 +730,35 @@ export default function ContattiView({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-lg bg-white border border-zinc-200 rounded-3xl overflow-hidden shadow-2xl"
+              className="contact-modal w-full bg-white border border-zinc-200 rounded-3xl overflow-hidden shadow-2xl"
               id="contact-form-card"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="contact-modal-title"
             >
-              <div className="p-5 border-b border-zinc-100 flex items-center justify-between" id="form-header">
-                <h3 className="text-sm font-bold text-zinc-800 flex items-center gap-2">
+              <div className="contact-modal__header p-5 border-b border-zinc-100 flex items-center justify-between" id="form-header">
+                <h3 className="text-sm font-bold text-zinc-800 flex items-center gap-2" id="contact-modal-title">
                   <UserPlus className="w-4 h-4 text-indigo-600" />
                   {editingContact ? 'Modifica Contatto' : 'Nuovo Contatto'}
                 </h3>
                 <button 
+                  type="button"
                   onClick={() => setIsFormOpen(false)} 
+                  aria-label="Chiudi finestra contatto"
                   className="p-1 rounded hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-5 space-y-4" id="contact-modal-form">
+              <form onSubmit={handleSubmit} className="contact-modal__form" id="contact-modal-form">
+               <div className="contact-modal__body space-y-4">
                 <div className="grid grid-cols-2 gap-4" id="form-grid-names">
                   <div>
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Nome *</label>
                     <input
                       type="text"
+                      autoFocus
                       required
                       value={nome}
                       onChange={(e) => setNome(e.target.value)}
@@ -865,19 +919,23 @@ export default function ContattiView({
                   </div>
                 </div>
 
-                <div className="border-t border-zinc-100 pt-4 flex justify-end gap-2" id="form-submit-group">
+               </div>
+
+                <div className="contact-modal__footer flex justify-end gap-2" id="form-submit-group">
                   <button
                     type="button"
                     onClick={() => setIsFormOpen(false)}
+                    disabled={isSaving}
                     className="px-4 py-2 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-500 hover:text-zinc-700 text-xs font-bold rounded-lg transition-colors cursor-pointer"
                   >
                     Annulla
                   </button>
                   <button
                     type="submit"
+                    disabled={isSaving}
                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-indigo-100 cursor-pointer"
                   >
-                    Salva Modifiche
+                    {isSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Salvataggio...</> : 'Salva contatto'}
                   </button>
                 </div>
               </form>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Sparkles, User, LogOut, BellRing, HelpCircle } from 'lucide-react';
+import { Menu, Sparkles, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   currentViewLabel: string;
@@ -27,9 +27,12 @@ export default function Header({
           <Menu className="w-5 h-5" />
         </button>
 
-        <h1 className="text-sm font-bold font-sans text-zinc-800 tracking-tight uppercase" id="header-view-label">
+        <div>
+        <p className="header-eyebrow">Livoom Gestione Clienti</p>
+        <h1 className="text-sm font-bold font-sans text-zinc-800 tracking-tight" id="header-view-label">
           {currentViewLabel}
         </h1>
+        </div>
       </div>
 
       {/* Right section */}
@@ -53,7 +56,9 @@ export default function Header({
             <span className="text-xs font-bold text-zinc-800 truncate max-w-[150px]">
               {user.email || 'Utente Demo'}
             </span>
-            <span className="text-[9px] text-zinc-400 font-semibold uppercase tracking-wider">Operatore CRM</span>
+            <span className="text-[9px] text-zinc-400 font-semibold uppercase tracking-wider">
+              {user.email === 'access@admin.it' ? 'Amministratore' : 'Utente CRM'}
+            </span>
           </div>
           
           <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[11px] font-bold text-indigo-600 font-mono" id="header-avatar">
