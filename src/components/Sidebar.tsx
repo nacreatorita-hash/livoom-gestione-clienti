@@ -13,6 +13,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import livoomLoginBrand from '../assets/livoom-login-brand.png';
 
 export type ViewType = 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti' | 'scadenze-documenti';
 
@@ -54,8 +55,11 @@ export default function Sidebar({
       <div className="p-6 border-b border-zinc-100 flex items-center gap-3" id="sidebar-brand">
         <div>
           <div>
-            <h2 className="font-sans font-bold tracking-tight text-lg text-zinc-800">Livoom Gestione Clienti</h2>
-            <p className="text-[10px] text-zinc-400 font-semibold">Created by Na Creator Italia</p>
+            <img
+              src={livoomLoginBrand}
+              alt="Livoom"
+              className="sidebar-brand-image"
+            />
           </div>
           {user.isDemo && (
             <div className="flex items-center gap-1 mt-0.5">

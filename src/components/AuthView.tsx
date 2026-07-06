@@ -120,6 +120,7 @@ export default function AuthView({ onAuthSuccess }: AuthViewProps) {
               alt="Livoom — Live simple. Feel at home."
               className="auth-brand-image"
             />
+            <p className="auth-brand-credit">Created by Na Creator Italia</p>
             {!isLogin && (
               <h2 className="text-xl font-bold font-sans tracking-tight text-zinc-800 mt-5" id="auth-title">
                 Crea un nuovo account
