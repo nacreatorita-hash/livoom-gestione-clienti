@@ -12,7 +12,8 @@ import {
   X,
   PhoneOutgoing,
   CornerDownRight,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -20,6 +21,7 @@ interface ChiamateViewProps {
   contacts: Contact[];
   calls: Call[];
   onCreateCall: (call: Omit<Call, 'id' | 'created_at' | 'user_id'>) => Promise<Call>;
+  onDeleteCall: (id: string) => Promise<void>;
   onSelectContact: (contactId: string) => void;
   onNavigateToView: (view: 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti') => void;
   preselectedContact: Contact | null;
@@ -30,6 +32,7 @@ export default function ChiamateView({
   contacts,
   calls,
   onCreateCall,
+  onDeleteCall,
   onSelectContact,
   onNavigateToView,
   preselectedContact,
@@ -107,6 +110,16 @@ export default function ChiamateView({
       setProssimoRichiamo('');
     } catch (err) {
       console.error('Error recording call', err);
+    }
+  };
+
+  const handleDeleteCall = async (call: Call) => {
+    const contactName = getContactName(call.contatto_id);
+    if (!window.confirm(`Eliminare la chiamata registrata per ${contactName}? Questa operazione non può essere annullata.`)) return;
+    try {
+      await onDeleteCall(call.id);
+    } catch (err) {
+      console.error('Error deleting call', err);
     }
   };
 
@@ -271,16 +284,27 @@ export default function ChiamateView({
                       )}
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          onSelectContact(call.contatto_id);
-                          onNavigateToView('contatti');
-                        }}
-                        className="p-1.5 rounded-xl hover:bg-zinc-50 text-zinc-400 hover:text-zinc-800 transition-colors inline-flex items-center gap-1 text-[10px] font-bold cursor-pointer"
-                      >
-                        Vedi Scheda
-                        <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
-                      </button>
+                      <div className="inline-flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => {
+                            onSelectContact(call.contatto_id);
+                            onNavigateToView('contatti');
+                          }}
+                          className="p-1.5 rounded-xl hover:bg-zinc-50 text-zinc-400 hover:text-zinc-800 transition-colors inline-flex items-center gap-1 text-[10px] font-bold cursor-pointer"
+                        >
+                          Vedi Scheda
+                          <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCall(call)}
+                          className="p-2 rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Elimina chiamata"
+                          aria-label={`Elimina chiamata di ${getContactName(call.contatto_id)}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

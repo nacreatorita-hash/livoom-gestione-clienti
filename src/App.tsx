@@ -53,7 +53,6 @@ export default function App() {
               email: session.user.email || '',
               isDemo: false
             });
-            
           }
         } catch (err) {
           console.error('Session check error:', err);
@@ -205,6 +204,17 @@ export default function App() {
       return newCall;
     } catch (err: any) {
       showNotification('Errore nel salvataggio della chiamata: ' + err.message, 'error');
+      throw err;
+    }
+  };
+
+  const handleDeleteCall = async (id: string) => {
+    try {
+      await storage.deleteCall(id);
+      setCalls(prev => prev.filter(call => call.id !== id));
+      showNotification('Chiamata eliminata correttamente.', 'success');
+    } catch (err: any) {
+      showNotification('Impossibile eliminare la chiamata: ' + err.message, 'error');
       throw err;
     }
   };
@@ -465,6 +475,7 @@ export default function App() {
                 contacts={contacts}
                 calls={calls}
                 onCreateCall={handleCreateCall}
+                onDeleteCall={handleDeleteCall}
                 onSelectContact={setSelectedContactId}
                 onNavigateToView={(view) => {
                   setCurrentView(view);

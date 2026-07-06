@@ -299,6 +299,17 @@ export const storage = {
     }
   },
 
+  deleteCall: async (id: string): Promise<void> => {
+    if (supabase) {
+      const { error } = await supabase.from('calls').delete().eq('id', id);
+      if (error) throw error;
+    } else {
+      let list = JSON.parse(localStorage.getItem('nacrm_calls') || '[]');
+      list = list.filter((call: Call) => call.id !== id);
+      localStorage.setItem('nacrm_calls', JSON.stringify(list));
+    }
+  },
+
   // --- APPOINTMENTS ---
   getAppointments: async (userId: string): Promise<Appointment[]> => {
     if (supabase) {
