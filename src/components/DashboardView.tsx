@@ -157,7 +157,7 @@ export default function DashboardView({
           </div>
           <h2 className="text-xl font-bold text-zinc-800 tracking-tight">Benvenuto in Livoom Gestione Clienti</h2>
           <p className="text-zinc-500 text-xs max-w-xl font-medium">
-            Ecco lo stato delle tue vendite e delle relazioni con i clienti per oggi. Gestisci le trattative con precisione.
+            Tieni sotto controllo contatti, richieste, appuntamenti e documenti per la gestione dei subaffitti.
           </p>
         </div>
         <div className="z-10 shrink-0 flex gap-2">
