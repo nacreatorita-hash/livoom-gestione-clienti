@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { Shield, Key, Mail, CheckCircle2, AlertCircle, ArrowRight, Sparkles, User, Database } from 'lucide-react';
+import { Key, Mail, CheckCircle2, AlertCircle, ArrowRight, Sparkles, User, Database } from 'lucide-react';
 import { motion } from 'motion/react';
+import livoomLoginBrand from '../assets/livoom-login-brand.png';
 
 interface AuthViewProps {
   onAuthSuccess: (user: { id: string; email: string; isDemo: boolean }) => void;
@@ -114,17 +115,16 @@ export default function AuthView({ onAuthSuccess }: AuthViewProps) {
           id="auth-card"
         >
           <div className="text-center mb-6" id="auth-card-header">
-            <div className="inline-flex p-3 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 mb-3" id="auth-icon-container">
-              <Shield className="w-6 h-6" />
-            </div>
-            <h2 className="text-xl font-bold font-sans tracking-tight text-zinc-800" id="auth-title">
-              {isLogin ? 'Accedi al tuo gestionale Livoom' : 'Crea un nuovo account'}
-            </h2>
-            <p className="text-xs text-zinc-400 font-semibold mt-1" id="auth-subtitle">
-              {isLogin 
-                ? 'Gestisci contatti, chiamate e appuntamenti in un unico posto.' 
-                : 'Inizia subito a strutturare le tue relazioni commerciali.'}
-            </p>
+            <img
+              src={livoomLoginBrand}
+              alt="Livoom — Live simple. Feel at home."
+              className="auth-brand-image"
+            />
+            {!isLogin && (
+              <h2 className="text-xl font-bold font-sans tracking-tight text-zinc-800 mt-5" id="auth-title">
+                Crea un nuovo account
+              </h2>
+            )}
           </div>
 
           {errorMsg && (
