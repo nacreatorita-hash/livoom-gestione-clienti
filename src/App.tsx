@@ -12,8 +12,14 @@ import ChiamateView from './components/ChiamateView';
 import AgendaView from './components/AgendaView';
 import DocumentiView from './components/DocumentiView';
 import ScadenzeDocumentiView from './components/ScadenzeDocumentiView';
+import LivoomShareView from './components/LivoomShareView';
+import {
+  clearLivoomShareImportFromUrl,
+  mapLivoomShareLeadToContact,
+  readLivoomShareImportFromUrl
+} from './lib/livoomShareImport';
 
-import { AlertCircle, Loader2, Sparkles, Database, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
@@ -36,6 +42,8 @@ export default function App() {
   const [preselectedContact, setPreselectedContact] = useState<Contact | null>(null);
   const [preselectedDocument, setPreselectedDocument] = useState<DocumentDrive | null>(null);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
+  const [pendingLivoomShareImport, setPendingLivoomShareImport] = useState(() => readLivoomShareImportFromUrl());
+  const [isImportingLivoomShareLead, setIsImportingLivoomShareLead] = useState(false);
 
   // Global Toast Notifications
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -103,6 +111,30 @@ export default function App() {
       setDocuments([]);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user || !pendingLivoomShareImport || isImportingLivoomShareLead) return;
+
+    const importLead = async () => {
+      setIsImportingLivoomShareLead(true);
+      try {
+        const contactPayload = mapLivoomShareLeadToContact(pendingLivoomShareImport);
+        const newContact = await handleCreateContact(contactPayload);
+        await fetchCRMData();
+        setSelectedContactId(newContact.id);
+        setCurrentView('contatti');
+        setPendingLivoomShareImport(null);
+        clearLivoomShareImportFromUrl();
+      } catch (err: any) {
+        console.error('Livoom Share import failed:', err);
+        showNotification('Import da Livoom Share non riuscito: ' + (err.message || 'controlla i dati del lead'), 'error');
+      } finally {
+        setIsImportingLivoomShareLead(false);
+      }
+    };
+
+    importLead();
+  }, [user, pendingLivoomShareImport, isImportingLivoomShareLead]);
 
   // Helper helper to show user feedback toasts
   const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -351,6 +383,7 @@ export default function App() {
       case 'agenda': return 'Agenda';
       case 'documenti': return 'Documenti';
       case 'scadenze-documenti': return 'Scadenze documenti';
+      case 'livoom-share': return 'Livoom Share';
       default: return 'Livoom Gestione Clienti';
     }
   };
@@ -433,6 +466,13 @@ export default function App() {
             <div className="py-2 flex items-center justify-center gap-2 text-xs text-amber-500/70 mb-4 bg-amber-500/5 border border-amber-500/10 rounded-xl" id="sync-loader">
               <Loader2 className="w-4 h-4 animate-spin" />
               <span>Sincronizzazione in corso con il database...</span>
+            </div>
+          )}
+
+          {isImportingLivoomShareLead && (
+            <div className="py-2 flex items-center justify-center gap-2 text-xs text-indigo-600 mb-4 bg-indigo-50 border border-indigo-100 rounded-xl" id="livoom-share-import-loader">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Importazione lead da Livoom Share...</span>
             </div>
           )}
 
@@ -528,6 +568,10 @@ export default function App() {
                   setCurrentView('documenti');
                 }}
               />
+            )}
+
+            {currentView === 'livoom-share' && (
+              <LivoomShareView />
             )}
           </div>
 

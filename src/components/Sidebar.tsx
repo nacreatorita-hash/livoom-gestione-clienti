@@ -6,6 +6,7 @@ import {
   Calendar, 
   FolderLock, 
   CalendarClock,
+  Share2,
   LogOut, 
   Menu, 
   X, 
@@ -15,7 +16,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import livoomLoginBrand from '../assets/livoom-login-brand.png';
 
-export type ViewType = 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti' | 'scadenze-documenti';
+export type ViewType = 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti' | 'scadenze-documenti' | 'livoom-share';
 
 interface SidebarProps {
   currentView: ViewType;
@@ -42,6 +43,7 @@ export default function Sidebar({
     { id: 'agenda' as ViewType, label: 'Agenda', icon: Calendar, tone: 'coral' },
     { id: 'documenti' as ViewType, label: 'Documenti', icon: FolderLock, tone: 'orange' },
     { id: 'scadenze-documenti' as ViewType, label: 'Scadenze documenti', icon: CalendarClock, tone: 'red' },
+    { id: 'livoom-share' as ViewType, label: 'Livoom Share', icon: Share2, tone: 'indigo' },
   ];
 
   const handleNavClick = (viewId: ViewType) => {

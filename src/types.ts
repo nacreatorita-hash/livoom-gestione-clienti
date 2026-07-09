@@ -3,7 +3,7 @@ export type ContactStatus = 'Nuovo' | 'In Contatto' | 'Trattativa' | 'Chiuso Vin
 export type CallOutcome = 'Risposto' | 'Non risposto' | 'Da richiamare' | 'Non interessato' | 'Appuntamento fissato';
 export type AppointmentType = 'Telefonico' | 'Video Call' | 'Presenziale' | 'Altro';
 export type DocumentType = 'Contratto' | 'Preventivo' | 'Fattura' | 'Identità' | 'Altro';
-export type ViewType = 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti' | 'scadenze-documenti';
+export type ViewType = 'dashboard' | 'contatti' | 'chiamate' | 'agenda' | 'documenti' | 'scadenze-documenti' | 'livoom-share';
 
 export interface Contact {
   id: string;
